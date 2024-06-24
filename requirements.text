@@ -1,0 +1,7 @@
+requests
+gradio
+pillow
+exa-py
+transformers
+pinecone-client
+torch
