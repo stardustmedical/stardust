@@ -5,6 +5,9 @@ import json
 import os
 from io import BytesIO
 import base64
+from pinecone import Pinecone
+from rag import get_single_image_embedding, get_image
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,7 +25,6 @@ def search(query: str):
         text=True,
         category="research paper"
     )
-    print(result)
 
     return result
 
@@ -79,29 +81,30 @@ def generate_description(image):
 
 
 def find_similar_images(image):
-    # TODO: Add logic to find similar images
-    similar_images = [image, image, image]  # Placeholder for now
+    pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    index = pinecone.Index("pathology")
+
+    image_embedding = get_single_image_embedding(image)
+    print(f"Successfully created image embedding.")
+
+    query_response = index.query(vector=image_embedding.flatten().tolist(), top_k=3, include_values=True, include_metadata=True)
+    print(f"Received query response: {query_response}")
+    similar_images = [get_image(result['metadata']['image']) for result in query_response['matches']]
+    print(f"Similar images: {similar_images}")
+
     return similar_images
 
 with gr.Blocks() as demo:
-    gr.Markdown("# Pathopaedia")
-    gr.Markdown("""
-    Pathopaedia is a tool for identifying and describing pathological changes in microscopic images of tissue samples.
-    """)
+    gr.Markdown("# Stardust")
+    gr.Markdown("A tool for finding similar microscopic images of biopsy samples.")
     with gr.Row():
         with gr.Column():
-            image_input = gr.Image(label="Upload Microscopic Image", sources=["upload", "clipboard"])
+            image_input = gr.Image(label="Upload Microscopic Image", sources=["upload"])
             submit_button = gr.Button("Find Similar Images")
         
         with gr.Column():
             gallery = gr.Gallery(label="Similar Images")
     
     submit_button.click(find_similar_images, inputs=image_input, outputs=gallery)
-
 if __name__ == "__main__":
-    demo.launch(share=False)
-    # img = Image.open("/Users/leandermarkisch/Downloads/histo_image.jpg")
-    # image_description = generate_description(img)
-    # print(image_description)
-
-    # search_result = search(query="pathology ai diseases")
+    demo.launch(share=False, debug=True)
