@@ -4,4 +4,4 @@ pillow
 exa-py
 transformers
 pinecone-client
-torch
+modal==0.63.41
