@@ -1,6 +1,7 @@
 requests==2.32.3
 gradio==4.37.2
-pillow==10.4.0
 transformers==4.42.3
 pinecone-client==4.1.2
 modal==0.63.41
+docopt==0.6.2
+torch=2.3.1
