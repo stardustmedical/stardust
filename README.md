@@ -22,6 +22,18 @@ To set up the project, follow these steps:
    pip install -r requirements.txt
    ```
 
+   ```
+   pip install git+https://github.com/leandermaerkisch/hover_net.git 
+   ```
+
+   OR
+
+   ```
+   git clone https://github.com/leandermaerkisch/hover_net.git 
+   cd hover_net
+   pip install -e .
+   ```
+
 3. **Set up the environment variables:**
    - Create a `.env` file in the root directory of the project.
    - Add the following line to the `.env` file:

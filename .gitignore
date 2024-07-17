@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# System files
+.DS_Store
+
+# Large files
+dataset/
+pretrained/
+
 # Distribution / packaging
 .Python
 build/
