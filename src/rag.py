@@ -1,7 +1,6 @@
 import os
 from pinecone import Pinecone
 import torch
-import json
 from transformers import CLIPProcessor, CLIPModel, CLIPTokenizer
 from PIL import Image
 import requests

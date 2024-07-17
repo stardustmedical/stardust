@@ -1,6 +1,6 @@
 import gradio as gr
-from PIL import Image
 import os
+import multiprocessing
 from pinecone import Pinecone
 from rag import get_single_image_embedding, get_image
 
@@ -35,4 +35,4 @@ with gr.Blocks() as demo:
     
     submit_button.click(find_similar_images, inputs=image_input, outputs=gallery)
 if __name__ == "__main__":
-    demo.launch(share=False, debug=True)
+    demo.launch(share=True, debug=True)
