@@ -8,7 +8,7 @@ def crop_op(x, cropping, data_format="NCHW"):
         x: input image
         cropping: the substracted amount
         data_format: choose either `NCHW` or `NHWC`
-        
+
     """
     crop_t = cropping[0] // 2
     crop_b = cropping[0] - crop_t
@@ -19,6 +19,7 @@ def crop_op(x, cropping, data_format="NCHW"):
     else:
         x = x[:, crop_t:-crop_b, crop_l:-crop_r, :]
     return x
+
 
 def crop_to_shape(x, y, data_format="NCHW"):
     """Centre crop x so that x has shape of y. y dims must be smaller than x dims.
