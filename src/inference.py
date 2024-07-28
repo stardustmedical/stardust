@@ -1,5 +1,6 @@
 import sys
 import os
+from typing import Literal
 import logging
 import torch
 import modal
@@ -8,24 +9,113 @@ import os
 import traceback
 import time
 
-# Add the parent directory to the Python path
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(parent_dir)
+image = (
+    modal.Image.debian_slim()
+    .apt_install("git")
+    .pip_install(
+        "torch",
+        "opencv-python-headless",
+        "docopt",
+        "numpy",
+        # "git+https://github.com/leandermaerkisch/hover_net.git@fbc8a3906e3db61a1844b400b806c3dbf5e6b55f#egg=hover_net"
+    )
+)
 
-from hover_net import run_infer
-from docopt import docopt
+app = modal.App("hover-net-inference", image=image)
+
+@app.function(image=image, gpu="A10G", timeout=3600)
+def run_inference(data_type):
+    import sys
+    import os
+    import subprocess
+    import site
 
 
-def log_with_timestamp(message):
-    print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}")
+    import traceback
+    from typing import Literal
+    import logging
+    import torch
+    import time
+    
+    print("Starting run_inference function")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Contents of current directory: {os.listdir('.')}")
+
+    print(f"Python path: {sys.path}")
+
+    # Print site-packages directories
+    print("Site-packages directories:")
+    for path in site.getsitepackages():
+        print(f"  {path}")
+        if os.path.exists(path):
+            print(f"    Contents: {os.listdir(path)}")
+    
+    # Print installed packages
+    print("Installed packages:")
+    subprocess.run([sys.executable, "-m", "pip", "list"])
+
+    with image.imports():
+        # Try to install hover_net
+        print("Attempting to install hover_net...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/leandermaerkisch/hover_net.git@2759d24e34df3db38550c646726dab4ca23f5edf#egg=hover_net"])
+    
+        # Function to search for files
+        def find_files(name, path):
+            result = []
+            for root, dirs, files in os.walk(path):
+                if name in files or name in dirs:
+                    result.append(os.path.join(root, name))
+            return result
+
+        # Search for hover_net in common locations
+        search_paths = ['/usr/local/lib/python3.*/site-packages', '/root/.local/lib/python3.*/site-packages', '/opt/conda/lib/python3.*/site-packages']
+        
+        for search_path in search_paths:
+            hover_net_locations = find_files('hover_net', search_path)
+            if hover_net_locations:
+                print(f"Found hover_net in the following locations:")
+                for location in hover_net_locations:
+                    print(f"  {location}")
+                    if os.path.isdir(location):
+                        print(f"  Contents: {os.listdir(location)}")
+            else:
+                print(f"hover_net not found in {search_path}")
+
+        # Try to import hover_net
+        try:
+            import hover_net
+            print(f"hover_net package location: {hover_net.__file__}")
+            from hover_net import run_infer
+            print("Successfully imported run_infer from hover_net")
+        except ImportError as e:
+            print(f"Error importing hover_net: {e}")
+            print("Traceback:")
+            traceback.print_exc()
+
+        # If import fails, try to find hover_net manually
+        if 'hover_net' not in sys.modules:
+            print("Manual search for hover_net:")
+            for path in sys.path:
+                hover_net_path = os.path.join(path, 'hover_net')
+                if os.path.exists(hover_net_path):
+                    print(f"Found hover_net directory at: {hover_net_path}")
+                    print(f"Contents: {os.listdir(hover_net_path)}")
+
+        return  # Exit the function if we can't import hover_net
+
+    from docopt import docopt
 
 
-if __name__ == "__main__":
-    # Set up the arguments
-    data_type = (
-        sys.argv[1] if len(sys.argv) > 1 else "tile"
-    )  # Default to 'tile' if no argument is provided
-    print(f"Running in data type processing mode: {data_type}")
+    def log_with_timestamp(message):
+        print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}")
+
+        # Set up the arguments
+        data_type = (
+            sys.argv[1] if len(sys.argv) > 1 else "tile"
+        )  # Default to 'tile' if no argument is provided
+        print(f"Running in data type processing mode: {data_type}")
+
+    log_with_timestamp("Setting up arguments")
 
     common_args = [
         "--gpu=0",
@@ -58,16 +148,25 @@ if __name__ == "__main__":
         ],
     }
 
+    log_with_timestamp("Parsing arguments with docopt")
+
     argv = common_args + [data_type] + data_type_args[data_type]
 
-    # Parse arguments using docopt
-    args = docopt(
-        run_infer.__doc__,
-        argv=argv,
-        help=False,
-        options_first=True,
-        version="HoVer-Net Pytorch Inference v1.0",
-    )
+    try:
+        # Parse arguments using docopt
+        args = docopt(
+            run_infer.__doc__,
+            argv=argv,
+            help=False,
+            options_first=True,
+            version="HoVer-Net Pytorch Inference v1.0",
+        )
+        # ... rest of the code ...
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        traceback.print_exc()
+        return  # Exit the function if an error occurs
+
     sub_cmd = args.pop("<command>")
     sub_cmd_args = args.pop("<args>")
 
@@ -83,18 +182,18 @@ if __name__ == "__main__":
     sub_cli_dict = {"tile": run_infer.tile_cli, "wsi": run_infer.wsi_cli}
     sub_args = docopt(sub_cli_dict[sub_cmd], argv=sub_cmd_args, help=True)
 
-    # Set up CUDA
+    log_with_timestamp("Setting up CUDA")
     args.pop("--version")
     gpu_list = args.pop("--gpu")
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_list
     nr_gpus = torch.cuda.device_count()
     run_infer.log_info("Detect #GPUS: %d" % nr_gpus)
 
-    # Process arguments
+    log_with_timestamp("Processing arguments")
     args = {k.replace("--", ""): v for k, v in args.items()}
     sub_args = {k.replace("--", ""): v for k, v in sub_args.items()}
 
-    # Set up method arguments
+    log_with_timestamp("Setting up method arguments")
     nr_types = int(args["nr_types"]) if int(args["nr_types"]) > 0 else None
     method_args = {
         "method": {
@@ -128,23 +227,27 @@ if __name__ == "__main__":
         else:
             run_args[key] = v
 
-    # Import and run the appropriate InferManager
+    log_with_timestamp(f"Importing InferManager for {sub_cmd}")
     if sub_cmd == "tile":
         from hover_net.infer.tile import InferManager
 
+        log_with_timestamp("Starting tile processing...")
         infer = InferManager(**method_args)
         infer.process_file_list(run_args)
     elif sub_cmd == "wsi":
+        log_with_timestamp("Starting WSI processing")
         from hover_net.infer.wsi import InferManager
 
         infer = InferManager(**method_args)
         try:
-            log_with_timestamp("Starting WSI processing...")
             log_with_timestamp(f"Input directory: {run_args['input_dir']}")
             log_with_timestamp(f"Output directory: {run_args['output_dir']}")
 
             # List files in the input directory
             wsi_files = []
+
+            log_with_timestamp("Starting WSI processing...")
+
             for root, dirs, files in os.walk(run_args["input_dir"]):
                 for file in files:
                     if file.endswith(
@@ -177,3 +280,13 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"An error occurred during WSI processing: {e}")
             traceback.print_exc()
+
+    log_with_timestamp("Finished run_inference function")
+
+
+if __name__ == "__main__":
+    with app.run():
+        data_type: Literal["wsi", "tile"] = "tile"
+        print("Starting remote execution of run_inference")
+        run_inference.remote(data_type)
+        print("Finished remote execution of run_inference")
