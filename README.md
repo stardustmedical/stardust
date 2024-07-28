@@ -18,29 +18,10 @@ To set up the project, follow these steps:
      ```
 
 2. **Install required packages:**
+To install the target package from test.pypi but all other dependencies from normal pypi
    ```
-   pip install -r requirements.txt
+   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple hover-net==0.0.6```
    ```
-
-   ```
-   pip install git+https://github.com/leandermaerkisch/hover_net.git 
-   ```
-
-   OR
-
-   ```
-   git clone https://github.com/leandermaerkisch/hover_net.git 
-   cd hover_net
-   pip install -e .
-   ```
-
-3. **Set up the environment variables:**
-   - Create a `.env` file in the root directory of the project.
-   - Add the following line to the `.env` file:
-     ```
-     PINECONE_API_KEY="your_pinecone_api_key_here"
-     ```
-   Replace `your_pinecone_api_key_here` with your actual Pinecone API key.
 
 
 ## Demo

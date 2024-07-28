@@ -1,21 +1,24 @@
 {
     "name": "Python 3",
-    "image": "mcr.microsoft.com/vscode/devcontainers/python:3.9",
-    "remoteUser": "vscode",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
     "customizations": {
         "vscode": {
-        "settings": {},
-        "extensions": [
-            "ms-azuretools.vscode-docker",
-            "eamodio.gitlens",
-            "github.vscode-github-actions",
-            "github.vscode-pull-request-github",
-            "github.copilot",
-            "github.copilot-chat",
-            "ms-toolsai.jupyter"
-        ]
+            "settings": {},
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "eamodio.gitlens",
+                "github.vscode-github-actions",
+                "github.vscode-pull-request-github",
+                "github.copilot",
+                "github.copilot-chat",
+                "ms-pyright.pyright"
+            ]
         }
     },
     "forwardPorts": [7860],
-    "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt"
+    "remoteUser": "vscode",
+    "runArgs": ["--privileged"]
 }
