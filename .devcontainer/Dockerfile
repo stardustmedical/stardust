@@ -27,12 +27,12 @@ WORKDIR /workspaces/stardust
 # Copy requirements files
 COPY requirements.txt requirements-dev.txt ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
-
 # Switch to the non-root user
 USER $USERNAME
+
+# Install Python dependencies
+RUN pip install --user --no-cache-dir --upgrade pip \
+    && pip install --user --no-cache-dir -r requirements.txt -r requirements-dev.txt
 
 # Set the default command
 CMD ["/bin/bash"]

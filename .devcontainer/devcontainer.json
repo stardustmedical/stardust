@@ -6,7 +6,6 @@
     },
     "customizations": {
         "vscode": {
-            "settings": {},
             "extensions": [
                 "ms-azuretools.vscode-docker",
                 "eamodio.gitlens",
@@ -14,11 +13,12 @@
                 "github.vscode-pull-request-github",
                 "github.copilot",
                 "github.copilot-chat",
-                "ms-pyright.pyright"
+                "ms-pyright.pyright",
+                "ms-python.python"
             ]
         }
     },
     "forwardPorts": [7860],
     "remoteUser": "vscode",
-    "runArgs": ["--privileged"]
+    "updateRemoteUserUID": true
 }

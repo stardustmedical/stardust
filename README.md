@@ -20,7 +20,7 @@ To set up the project, follow these steps:
 2. **Install required packages:**
 To install the target package from test.pypi but all other dependencies from normal pypi
    ```
-   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple hover-net==0.0.6```
+   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple hover-net==0.0.6
    ```
 
 

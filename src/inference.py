@@ -17,7 +17,7 @@ image = (
         "opencv-python-headless",
         "docopt",
         "numpy",
-        # "git+https://github.com/leandermaerkisch/hover_net.git@fbc8a3906e3db61a1844b400b806c3dbf5e6b55f#egg=hover_net"
+        "--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple hover-net==0.0.6"
     )
 )
 
