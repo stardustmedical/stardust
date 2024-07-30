@@ -61,6 +61,7 @@ cache/
 dataset/
 pretrained/
 .ruff_cache/
+models/
 
 # Logs
 *.log
