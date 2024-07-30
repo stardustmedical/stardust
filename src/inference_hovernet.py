@@ -25,7 +25,7 @@ image = (
     )
 )
 
-@app.function(image=image, volumes={"/models": volume}, mounts=[modal.Mount.from_local_dir("./dataset", remote_path="/root/dataset")])
+@app.function(image=image, gpu="A10G", timeout=3600, volumes={"/models": volume}, mounts=[modal.Mount.from_local_dir("./dataset", remote_path="/root/dataset")])
 def run_hovernet_inference():
     logger.info("Starting HoVerNet inference")
     logger.info(f"hover_net version: {hover_net.__version__}")
