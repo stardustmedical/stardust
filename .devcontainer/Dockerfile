@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     libopenslide0 \
     gcc \
     python3-dev \
+    zsh \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up a non-root user
@@ -30,9 +32,15 @@ COPY requirements.txt requirements-dev.txt ./
 # Switch to the non-root user
 USER $USERNAME
 
+# Install Oh My Zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
 # Install Python dependencies
 RUN pip install --user --no-cache-dir --upgrade pip \
     && pip install --user --no-cache-dir -r requirements.txt -r requirements-dev.txt
 
+# Set zsh as the default shell
+SHELL ["/bin/zsh", "-c"]
+
 # Set the default command
-CMD ["/bin/bash"]
+CMD ["/bin/zsh"]

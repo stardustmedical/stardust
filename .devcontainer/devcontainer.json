@@ -15,10 +15,17 @@
                 "github.copilot-chat",
                 "ms-pyright.pyright",
                 "ms-python.python"
-            ]
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh"
+            }
         }
     },
     "forwardPorts": [7860],
     "remoteUser": "vscode",
-    "updateRemoteUserUID": true
+    "updateRemoteUserUID": true,
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"
+    },
+    "postCreateCommand": "echo 'export PATH=$PATH:/home/vscode/.local/bin' >> ~/.bashrc && echo 'export PATH=$PATH:/home/vscode/.local/bin' >> ~/.zshrc"
 }
